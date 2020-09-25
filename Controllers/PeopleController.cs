@@ -1,6 +1,8 @@
-﻿using InfoManager.Data.Models;
+﻿using AutoMapper;
+using InfoManager.Data.Models;
 using InfoManager.Data.Repositories;
 using InfoManager.Validation;
+using InfoManager.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -14,22 +16,23 @@ namespace InfoManager.Controllers
     public class PeopleController : ControllerBase
     {
         private readonly IGenericRepository<Person> _repository;
-
-        public PeopleController(IGenericRepository<Person> repository)
+        private readonly IMapper _mapper;
+        public PeopleController(IGenericRepository<Person> repository, IMapper mapper)
         {
             this._repository = repository;
+            this._mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Person>>> GetPeople()
+        public async Task<ActionResult<IEnumerable<PersonViewModel>>> GetPeople()
         {
             var data = await this._repository.ListAsync();
 
-            return data.ToList();
+            return this._mapper.Map<List<Person>, List<PersonViewModel>>(data.ToList());
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Person>> GetPerson(int id)
+        public async Task<ActionResult<PersonViewModel>> GetPerson(int id)
         {
             var person = await this._repository.GetByIdAsync(id);
 
@@ -38,7 +41,7 @@ namespace InfoManager.Controllers
                 return NotFound();
             }
 
-            return person;
+            return this._mapper.Map<Person, PersonViewModel>(person);
         }
 
         [HttpPost("{id}")]
@@ -76,10 +79,10 @@ namespace InfoManager.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Person>> CreatePerson(Person person)
+        public async Task<ActionResult<PersonViewModel>> CreatePerson(Person person)
         {
             var validator = new PersonValidator();
-            
+
             if (!validator.Validate(person).IsValid)
             {
                 return BadRequest();
@@ -87,12 +90,14 @@ namespace InfoManager.Controllers
 
             await this._repository.AddAsync(person);
 
-            return CreatedAtAction("GetPerson", new { id = person.Id }, person);
+            var viewModel = this._mapper.Map<Person, PersonViewModel>(person);
+
+            return CreatedAtAction("GetPerson", new { id = person.Id }, viewModel);
         }
 
         // DELETE: api/People/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Person>> DeletePerson(int id)
+        public async Task<ActionResult<PersonViewModel>> DeletePerson(int id)
         {
             var person = await this._repository.GetByIdAsync(id);
             if (person == null)
@@ -101,8 +106,9 @@ namespace InfoManager.Controllers
             }
 
             await this._repository.DeleteAsync(person);
+            var viewModel = this._mapper.Map<Person, PersonViewModel>(person);
 
-            return person;
+            return viewModel;
         }
     }
 }
