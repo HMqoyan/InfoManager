@@ -10,7 +10,7 @@ namespace InfoManager.ViewModels
 
         public override string ProfileName => ViewModel;
 
-        public PersonProfile(IGenericRepository<Person> repository)
+        public PersonProfile()
         {
             var t = new PersonViewModel();
             this.CreateMap<Person, PersonViewModel>()

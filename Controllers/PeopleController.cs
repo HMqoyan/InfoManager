@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using InfoManager.BLL;
 using InfoManager.Data.Models;
 using InfoManager.Data.Repositories;
 using InfoManager.Validation;
@@ -6,7 +7,6 @@ using InfoManager.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace InfoManager.Controllers
@@ -26,22 +26,23 @@ namespace InfoManager.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PersonViewModel>>> GetPeople()
         {
-            var data = await this._repository.ListAsync();
+            var bl = new PersonBL(this._repository, this._mapper);
 
-            return this._mapper.Map<List<Person>, List<PersonViewModel>>(data.ToList());
+            return await bl.GetPeopleFullModel();
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<PersonViewModel>> GetPerson(int id)
         {
-            var person = await this._repository.GetByIdAsync(id);
+            var bl = new PersonBL(this._repository, this._mapper);
+            var person = await bl.GetPersonFullModel(id);
 
             if (person == null)
             {
                 return NotFound();
             }
 
-            return this._mapper.Map<Person, PersonViewModel>(person);
+            return person;
         }
 
         [HttpPost("{id}")]

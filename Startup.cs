@@ -1,5 +1,7 @@
 using AutoMapper;
 using InfoManager.Data.Contexts;
+using InfoManager.Data.Models;
+using InfoManager.Data.Repositories;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -22,8 +24,9 @@ namespace InfoManager
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<PeopleDBContext>(options =>
-               options.UseSqlServer(Configuration.GetConnectionString("PeopleDB")));
-            //services.AddAutoMapper(typeof(Startup));
+               options.UseMySQL(Configuration.GetConnectionString("PeopleDB")));
+            services.AddScoped<IGenericRepository<Person>, PeopleRepository>();
+            services.AddAutoMapper(typeof(Startup));
             services.AddControllers();
         }
 
@@ -39,7 +42,7 @@ namespace InfoManager
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            //app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
